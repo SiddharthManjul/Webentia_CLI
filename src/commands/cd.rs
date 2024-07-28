@@ -1,6 +1,8 @@
-use std::env;
+use std::env::{self};
 use std::io::{self, Write};
 use std::path::Path;
+
+use dirs;
 
 use crossterm::style::{Print, ResetColor};
 use crossterm::{
@@ -12,7 +14,7 @@ pub fn execute_cd() {
     let mut _input = String::new();
 
     loop {
-        print_current_dir_prompt();
+        let _ = print_current_dir_prompt();
 
         // Read User Input
         _input.clear();
@@ -24,12 +26,18 @@ pub fn execute_cd() {
         let command = parts.next();
 
         match command {
+            Some("~") => {
+                let target_dir = "/";
+                if let Err(e) = change_directory(target_dir) {
+                    eprintln!("cd: {}", e);
+                }
+            },
             Some("cd") => {
                 let target_dir = parts.next().unwrap_or("/");
                 if let Err(e) = change_directory(target_dir) {
                     eprintln!("cd: {}", e);
                 }
-            }
+            },
             Some("exit") => break,
             Some(cmd) => eprintln!("Unknown command: {}", cmd),
             None => {}
@@ -39,23 +47,32 @@ pub fn execute_cd() {
     
 }
 
-fn print_current_dir_prompt() {
+fn print_current_dir_prompt() -> Result<bool, Box<dyn std::error::Error>> {
     let current_dir = env::current_dir().unwrap_or_else(|_| Path::new("/").to_path_buf());
     execute!(
         io::stdout(),
         SetForegroundColor(Color::Cyan),
         Print(format!("{} \n", current_dir.display())),
         ResetColor
-    ).unwrap();
-    io::stdout().flush().unwrap();
+    )?;
+    io::stdout().flush()?;
+    Ok(true)
 }
 
 fn change_directory(dir: &str) -> io::Result<()> {
-    let new_dir = Path::new(dir);
-    if new_dir.is_dir() {
-        env::set_current_dir(new_dir)?;
-    } else {
-        return Err(io::Error::new(io::ErrorKind::NotFound, "Directory not found"));
+
+    let path = match dir {
+        "~" => dirs::home_dir().unwrap_or_else(|| Path::new("/").to_path_buf()),
+        _ => Path::new(dir).to_path_buf(),
+    };
+
+    if let Err(e) = env::set_current_dir(&path) {
+        execute!(
+            std::io::stdout(),
+            SetForegroundColor(Color::Red),
+            Print(format!("Error changing directory: {}\n", e)),
+            ResetColor
+        )?;
     }
     Ok(())
 }
