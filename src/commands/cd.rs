@@ -10,11 +10,6 @@ use crossterm::{
     style::{Color, SetForegroundColor},
 };
 
-pub fn execute_cd() {
-    
-    
-}
-
 pub fn print_current_dir_prompt() -> Result<bool, Box<dyn std::error::Error>> {
     let current_dir = env::current_dir().unwrap_or_else(|_| Path::new("/").to_path_buf());
     execute!(
