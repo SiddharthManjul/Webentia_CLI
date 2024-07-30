@@ -5,6 +5,7 @@ use std::io;
 use commands::cd::{print_current_dir_prompt, change_directory};
 use commands::ls::ls_command;
 use commands::pwd::pwd_command;
+use commands::clear::clear_command;
 
 fn main() {
     let mut _input = String::new();
@@ -33,6 +34,7 @@ fn main() {
                 ls_command(show_hidden);
             },
             Some("pwd") => pwd_command(),
+            Some("clear") => clear_command(),
             Some("exit") => break,
             Some(cmd) => eprintln!("Unknown command: {}", cmd),
             None => {}
