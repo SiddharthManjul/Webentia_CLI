@@ -9,6 +9,7 @@ use commands::clear::clear_command;
 
 fn main() {
     let mut _input = String::new();
+    let mut previous_dir:Option<String> = None;
 
     loop {
         let _ = print_current_dir_prompt();
@@ -25,7 +26,7 @@ fn main() {
         match command {
             Some("cd") => {
                 let target_dir = parts.next().unwrap_or("/");
-                if let Err(e) = change_directory(target_dir) {
+                if let Err(e) = change_directory(target_dir, &mut previous_dir) {
                     eprintln!("cd: {}", e);
                 }
             },
